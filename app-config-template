@@ -10,6 +10,7 @@ oath_token = YANDEX OATH-token
 file = user file
 
 [YANDEX_DISK]
+url_to_upload = https://cloud-api.yandex.net/v1/disk/resources/upload
 path = folder on yandex DISK
 
 [OVERWRITE]
