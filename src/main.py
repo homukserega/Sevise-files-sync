@@ -11,10 +11,11 @@ TOKEN = config["TOKEN"]["oath_token"]
 LOCAL_FILE = config["LOCAL"]["file"]              # локальный файл
 YANDEX_DISK_PATH = config["YANDEX_DISK"]["path"]
 DISK_PATH = f'{YANDEX_DISK_PATH}/{LOCAL_FILE}'    # куда сохранить на Диске
-OVERWRITE = config["OVERWRITE"]["value"]          # перезаписывать при совпадении имён
+OVERWRITE = config["OVERWRITE"]["value"]          # перезаписывать при совпадении имён в нашем случае = true
+URL_TO_UPLOAD = config["YANDEX_DISK"]["url_to_upload"]
 
 # Шаг 1. Запрашиваем ссылку для загрузки
-url = 'https://cloud-api.yandex.net/v1/disk/resources/upload'
+url = URL_TO_UPLOAD
 params = {
     'path': DISK_PATH,
     'overwrite': OVERWRITE,   # можно также 'false' или не указывать
