@@ -11,7 +11,11 @@ class YandexDiskConnector:
         self.token = None
         self.yandex_disk_path = None
         self.local_path = None
-        self.headers = None
+
+    def get_headers(self):
+        return {
+            'Authorization': f'OAuth {self._token}'
+        }
 
     @property
     def token(self):
@@ -20,10 +24,6 @@ class YandexDiskConnector:
     @token.setter
     def token(self, token: str):
         self._token = token
-        self._headers = {
-            'Authorization': f'OAuth {self.token}'
-        }
-
 
     @property
     def yandex_disk_path(self):
@@ -33,7 +33,7 @@ class YandexDiskConnector:
     def yandex_disk_path(self, yandex_disk_path: str):
         """
         :param yandex_disk_path: dir-name-which-will-be-synced on YANDEX DISK
-        :return:
+        :return: None
         """
         self._yandex_disk_path = yandex_disk_path
 
@@ -45,7 +45,7 @@ class YandexDiskConnector:
     def local_path(self, local_path: str):
         """
         :param local_path: /home/user/dir-name-which-will-be-synced LOCAL
-        :return: str
+        :return: None
         """
         self._local_path = local_path
 
@@ -64,7 +64,7 @@ class YandexDiskConnector:
         response = requests.get(
             "https://cloud-api.yandex.net/v1/disk/resources/upload",
             params=params,
-            headers=self._headers,
+            headers=self.get_headers(),
         )
         data = response.json()
         href = data['href']
@@ -72,5 +72,5 @@ class YandexDiskConnector:
         with open(f"{self.local_path}/{file_name}", "r") as file:
             file = file.read()
         # 3. Upload file to Yandex DISK
-        response = requests.put(href, data=file, headers=self._headers)
+        response = requests.put(href, data=file, headers=self.get_headers())
         print(response.status_code)
