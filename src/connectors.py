@@ -57,41 +57,51 @@ class YandexDiskConnector:
         :return: None
         """
         # 1. Get href to upload
+        yandex_file_path = f"{self._yandex_disk_path}/{file_name}"
+        local_file_path = f"{self._local_path}/{file_name}"
         params = {
-            'path': f"{self.yandex_disk_path}/{file_name}",
+            'path': yandex_file_path,
             'overwrite': "true",  # можно также 'false' или не указывать
             # 'fields': 'href,method' # опционально – какие поля включить в ответ
         }
-        url = f"{self.url}/upload"
-        response_get = requests.get(url, params=params, headers=self.get_headers())
+        response_get = requests.get(f"{self.url}/upload", params=params, headers=self.get_headers())
         data = response_get.json()
-        href = data['href']
-        # 2. read local file to br uploaded
-        with open(f"{self.local_path}/{file_name}", "r") as file:
-            file = file.read()
-        # 3. Upload file to Yandex DISK
-        return requests.put(href, data=file, headers=self.get_headers())
+        upload_url = data['href']
 
-    def info(self):
+        # 2. read local file to br uploaded
+        with open(local_file_path, "r") as file:
+            requests.put(upload_url, data=file, headers=self.get_headers())
+
+        # 3. Сохраняем исходное время модификации в custom_properties
+        mtime = int(os.path.getmtime(file_name))  # Unix timestamp
+        patch_params = {
+            "path": yandex_file_path,
+        }
+        patch_data = {
+            "custom_properties": {
+                "original_mtime": str(mtime)  # Сохраняем как строку
+            }
+        }
+        requests.patch(
+            self.url, params=patch_params, headers=self.get_headers(), json=patch_data)
+
+    def info_files(self):
         headers = self.get_headers()
         headers['Content-Type'] = 'application/json'
         headers['Accept'] = 'application/json'
 
-        params = {"path": self._yandex_disk_path, "limit": int(10e6)}
-        response = requests.get(self.url, params=params, headers=headers)
-
         yandex_files = {}
-        # if response.status_code == 200:
-        files = response.json().get("_embedded", {}).get("items", [])
+
+        info_params = {"path": self._yandex_disk_path, "limit": int(10e6)}
+        info_response = requests.get(self.url, params=info_params, headers=headers)
+        files = info_response.json().get("_embedded", {}).get("items", [])
         for file in files:
             if file["type"] == "file":
-                yandex_files[file["name"]] = file["modified"]
-        # else:
-        #     print(f"Ошибка доступа к облаку: {response.json().get('message')}")
+                yandex_files[file["name"]] = file["custom_properties"]["original_mtime"]
 
         return yandex_files
 
-    def delete(self, file_name: str):
+    def delete_file(self, file_name: str):
         headers = self.get_headers()
         params = {
             'path': f"{self.yandex_disk_path}/{file_name}",
