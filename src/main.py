@@ -20,10 +20,6 @@ yandex_disk_files: dict = {}
 
 local_files = {} # файлы из локальной папки
 
-# yandex_disk.load_file("test_file_to_sync.txt") # запись 1-го файла на YANDEX DISK
-
-# yandex_disk.delete("test_file_to_sync.txt") # удаление файла из YANDEX DISK
-
 for name in os.listdir(local_path):
     # Полный путь к файлу или папки
     full_path = os.path.join(local_path, name)
