@@ -11,6 +11,7 @@ class YandexDiskConnector:
         self.token = None
         self.yandex_disk_path = None
         self.local_path = None
+        self.url = "https://cloud-api.yandex.net/v1/disk/resources"
 
     def get_headers(self):
         return {
@@ -49,7 +50,7 @@ class YandexDiskConnector:
         """
         self._local_path = local_path
 
-    def overwrite_existing_file(self, file_name: str):
+    def load_file(self, file_name: str):
         """
         Method Upload single file to Yandex disk_path.
         :param file_name: test_file_to_sync.txt
@@ -61,35 +62,43 @@ class YandexDiskConnector:
             'overwrite': "true",  # можно также 'false' или не указывать
             # 'fields': 'href,method' # опционально – какие поля включить в ответ
         }
-        url = "https://cloud-api.yandex.net/v1/disk/resources/upload"
-        response = requests.get(url, params=params, headers=self.get_headers())
-        data = response.json()
+        url = f"{self.url}/upload"
+        response_get = requests.get(url, params=params, headers=self.get_headers())
+        data = response_get.json()
         href = data['href']
         # 2. read local file to br uploaded
         with open(f"{self.local_path}/{file_name}", "r") as file:
             file = file.read()
         # 3. Upload file to Yandex DISK
-        response = requests.put(href, data=file, headers=self.get_headers())
-        if response.status_code == 200:
-            print(f"Файл {file_name} - синхронизирован")
-        else:
-            print(f"Ошибка доступа к облаку: {response.json().get('message')}")
+        return requests.put(href, data=file, headers=self.get_headers())
 
     def info(self):
         headers = self.get_headers()
         headers['Content-Type'] = 'application/json'
         headers['Accept'] = 'application/json'
-        url = "https://cloud-api.yandex.net/v1/disk/resources"
+
         params = {"path": self._yandex_disk_path, "limit": int(10e6)}
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(self.url, params=params, headers=headers)
 
         yandex_files = {}
-        if response.status_code == 200:
-            files = response.json().get("_embedded", {}).get("items", [])
-            for file in files:
-                if file["type"] == "file":
-                    yandex_files[file["name"]] = file["modified"]
-        else:
-            print(f"Ошибка доступа к облаку: {response.json().get('message')}")
+        # if response.status_code == 200:
+        files = response.json().get("_embedded", {}).get("items", [])
+        for file in files:
+            if file["type"] == "file":
+                yandex_files[file["name"]] = file["modified"]
+        # else:
+        #     print(f"Ошибка доступа к облаку: {response.json().get('message')}")
 
         return yandex_files
+
+    def delete(self, file_name: str):
+        headers = self.get_headers()
+        params = {
+            'path': f"{self.yandex_disk_path}/{file_name}",
+            'force_async': "false",  # можно также 'false' или не указывать
+            'permanently': "true",
+            # 'fields': 'href,method' # опционально – какие поля включить в ответ
+        }
+        response = requests.delete(self.url, params=params, headers=headers)
+
+        return response
