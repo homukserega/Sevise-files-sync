@@ -74,7 +74,6 @@ class YandexDiskConnector:
 
         # 3. Сохраняем исходное время модификации в custom_properties
         mtime = int(os.path.getmtime(local_file_path))  # Unix timestamp
-        print(local_file_path, mtime)
         if not mtime: # если нет времени изменения, оно равно времени создания
             mtime = int(os.path.getctime(local_file_path))
         patch_params = {
@@ -89,6 +88,7 @@ class YandexDiskConnector:
         headers['Content-Type'] = 'application/json'
         requests.patch(
             self.url, params=patch_params, headers=headers, json=patch_data)
+        print(f"file {file_name} has been uploaded!")
 
     def info_files(self):
         headers = self.get_headers()
@@ -115,6 +115,5 @@ class YandexDiskConnector:
             'permanently': "true",
             # 'fields': 'href,method' # опционально – какие поля включить в ответ
         }
-        response = requests.delete(self.url, params=params, headers=headers)
-
-        return response
+        requests.delete(self.url, params=params, headers=headers)
+        print(f"file {file_name} has been deleted!")

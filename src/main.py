@@ -19,8 +19,8 @@ def fnc_diff_files(dict1, dict2) -> list:
 
 def yandex_delete(files_list: list, ya_disk: YandexDiskConnector) -> None:
     if len(files_list) > 0:
-        for f in files_list:
-            ya_disk.delete_file(f)
+        for fle in files_list:
+            ya_disk.delete_file(fle)
 
 
 def yandex_load(files_list: list, yad: YandexDiskConnector) -> None:
@@ -44,7 +44,7 @@ def get_local_files(lc_path: str) -> dict:
         full_path = os.path.join(lc_path, name)
         # Проверяем, что это файл (а не папка)
         if os.path.isfile(full_path):
-            lc_files[name] = int(os.path.getmtime(full_path))
+            lc_files[name] = str(int(os.path.getmtime(full_path)))
     return lc_files
 
 
@@ -68,14 +68,9 @@ if __name__ == "__main__":
         local_files = get_local_files(local_path) # файлы из локальной папки
 
         if yandex_disk_files != local_files:
-            print(local_files, yandex_disk_files)
             print("Sync..")
             # получение списка файлов из YANDEX DISK
             yandex_disk_files: dict = yandex_disk.info_files()
-
-            # Удаление файлов
-            yandex_dell_files: list = fnc_diff_files(yandex_disk_files, local_files)
-            yandex_delete(yandex_dell_files, yandex_disk)
 
             # Запись новых файлов
             yandex_load_files: list = fnc_diff_files(local_files, yandex_disk_files)
@@ -86,8 +81,10 @@ if __name__ == "__main__":
             if len(yandex_reload_mtime_files) > 0:
                 for file in yandex_reload_mtime_files:
                     yandex_disk.load_file(file)
-            print("Sync completed.")
-            print("Sleeping..10")
+
+            # Удаление файлов
+            yandex_dell_files: list = fnc_diff_files(yandex_disk_files, local_files)
+            yandex_delete(yandex_dell_files, yandex_disk)
             sleep(10)
         else:
             print("All files the same!!!")
