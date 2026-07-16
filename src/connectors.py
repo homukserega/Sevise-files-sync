@@ -3,9 +3,6 @@ import os
 import requests
 
 
-# Путь к локальному ПК задается вручную
-
-
 class YandexDiskConnector:
     def __init__(self):
         self.token = None
@@ -50,7 +47,7 @@ class YandexDiskConnector:
         """
         self._local_path = local_path
 
-    def load_file(self, file_name: str):
+    def upload_file(self, file_name: str):
         """
         Method Upload single file to Yandex disk_path.
         :param file_name: test_file_to_sync.txt

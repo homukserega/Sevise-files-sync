@@ -3,7 +3,7 @@
 
 echo "Введите абсолютный путь к синхронизируемому каталогу."
 echo "Пример: /home/user/Downloads."
-read -r HOST_PATH
+read -r -p " > " HOST_PATH
 
 # Проверяем, существует ли каталог
 if [ ! -d "$HOST_PATH" ]; then
