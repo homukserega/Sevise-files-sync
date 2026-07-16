@@ -50,15 +50,16 @@ def get_local_files(lc_path: str) -> dict:
 
 if __name__ == "__main__":
     yandex_disk_files = {}  # файлы на диске Yandex
-    local_volume_path = "/home/app/data"
+    local_volume_path = "data"
 
-    app_dir = os.path.dirname(os.path.abspath(__file__))
-    local_path = os.path.join(app_dir, local_volume_path)
+    # Формирование абсолютного пути
+    # app_dir = os.path.dirname(os.path.abspath(__file__))
+    # local_path = os.path.join(app_dir, local_volume_path)
 
     yandex_disk = YandexDiskConnector()
     yandex_disk.token = os.getenv("YANDEX_TOKEN")
     yandex_disk.yandex_disk_path = os.getenv("YANDEX_DISK_PATH")
-    yandex_disk.local_path = local_path
+    yandex_disk.local_path = local_volume_path
 
     while True:
         local_files = get_local_files(local_volume_path) # файлы из локальной папки

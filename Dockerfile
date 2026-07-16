@@ -1,4 +1,4 @@
-FROM python:3.12-alpine
+FROM python:3.12.3-alpine
 
 # Отключаем создание .pyc и буферизацию вывода
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -10,15 +10,17 @@ WORKDIR /app
 # Копируем файл зависимостей (имя должно совпадать)
 COPY requirements.txt ./
 
-# Создаём виртуальное окружение и устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Обновляем pip и устанавливаем зависимости
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Копируем остальной код приложения (из папки src/)
 COPY src/ ./
 
 # Копируем .env (если нужен)
 COPY .env ./
+
+RUN mkdir data
 
 # Запускаем приложение через интерпретатор виртуального окружения
 # Предположим, что главный файл называется main.py

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 # Скрипт для запуска docker-compose с запросом пути монтирования
 
 echo "Введите абсолютный путь к синхронизируемому каталогу."
@@ -15,4 +15,4 @@ fi
 export HOST_PATH
 
 # Запускаем контейнеры
-docker compose up
+docker compose up --build

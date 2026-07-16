@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   app:
     build: .
     volumes:
       # Монтируем каталог из хоста в /app/data внутри контейнера
-      - ${HOST_PATH}:/app/data
-    environment:
-      - PYTHONUNBUFFERED=1
+      - ${HOST_PATH}:/app/data:ro
+#    environment:
+#      - PYTHONUNBUFFERED=1
