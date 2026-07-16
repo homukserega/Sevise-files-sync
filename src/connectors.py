@@ -69,11 +69,14 @@ class YandexDiskConnector:
         upload_url = data['href']
 
         # 2. read local file to br uploaded
-        with open(local_file_path, "r") as file:
+        with open(local_file_path, "rb") as file:
             requests.put(upload_url, data=file, headers=self.get_headers())
 
         # 3. Сохраняем исходное время модификации в custom_properties
-        mtime = int(os.path.getmtime(file_name))  # Unix timestamp
+        mtime = int(os.path.getmtime(local_file_path))  # Unix timestamp
+        print(local_file_path, mtime)
+        if not mtime: # если нет времени изменения, оно равно времени создания
+            mtime = int(os.path.getctime(local_file_path))
         patch_params = {
             "path": yandex_file_path,
         }
@@ -82,8 +85,10 @@ class YandexDiskConnector:
                 "original_mtime": str(mtime)  # Сохраняем как строку
             }
         }
+        headers = self.get_headers()
+        headers['Content-Type'] = 'application/json'
         requests.patch(
-            self.url, params=patch_params, headers=self.get_headers(), json=patch_data)
+            self.url, params=patch_params, headers=headers, json=patch_data)
 
     def info_files(self):
         headers = self.get_headers()
@@ -94,10 +99,11 @@ class YandexDiskConnector:
 
         info_params = {"path": self._yandex_disk_path, "limit": int(10e6)}
         info_response = requests.get(self.url, params=info_params, headers=headers)
+
         files = info_response.json().get("_embedded", {}).get("items", [])
         for file in files:
             if file["type"] == "file":
-                yandex_files[file["name"]] = file["custom_properties"]["original_mtime"]
+                yandex_files[file["name"]] = file.get("custom_properties", {}).get("original_mtime")
 
         return yandex_files
 

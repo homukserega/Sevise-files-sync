@@ -4,64 +4,92 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from time import sleep
+
 from connectors import YandexDiskConnector
 
-yandex_disk = YandexDiskConnector()
+
+def fnc_diff_files(dict1, dict2) -> list:
+    diff_list = []
+    for item in dict1:
+        if item not in dict2:
+            diff_list.append(item)
+    return diff_list
 
 
-def main_fnc(user_path: str):
+def yandex_delete(files_list: list, ya_disk: YandexDiskConnector) -> None:
+    if len(files_list) > 0:
+        for f in files_list:
+            ya_disk.delete_file(f)
+
+
+def yandex_load(files_list: list, yad: YandexDiskConnector) -> None:
+    if len(files_list) > 0:
+        for fl in files_list:
+            yad.load_file(fl)
+
+
+def fnc_mtime_fix_files(local_f: dict, yandex_load_f: dict) -> list:
+    mtime_fix_files = []
+    for nm in local_f:
+        if nm in yandex_load_f and local_f[nm] != yandex_load_f[nm]:
+            mtime_fix_files.append(nm)
+    return mtime_fix_files
+
+
+def get_local_files(lc_path: str) -> dict:
+    lc_files = {}
+    for name in os.listdir(lc_path):
+        # Полный путь к файлу или папки
+        full_path = os.path.join(lc_path, name)
+        # Проверяем, что это файл (а не папка)
+        if os.path.isfile(full_path):
+            lc_files[name] = int(os.path.getmtime(full_path))
+    return lc_files
+
+
+if __name__ == "__main__":
+    yandex_disk_files = {}  # файлы на диске Yandex
+    # local_files = {}  # файлы из локальной папки
+
+    # user_input_path = input("Please enter the path to your Local Folder:"
+    #                         "\nExample: /home/user/Загрузки\n > ")
+    user_path = "/home/lenovo/Изображения"
+
     app_dir = os.path.dirname(os.path.abspath(__file__))
     local_path = os.path.join(app_dir, user_path)
 
+    yandex_disk = YandexDiskConnector()
     yandex_disk.token = os.getenv("YANDEX_TOKEN")
     yandex_disk.yandex_disk_path = os.getenv("YANDEX_DISK_PATH")
     yandex_disk.local_path = local_path
 
+    while True:
+        local_files = get_local_files(local_path) # файлы из локальной папки
 
-    yandex_disk_files: dict = {}
+        if yandex_disk_files != local_files:
+            print(local_files, yandex_disk_files)
+            print("Sync..")
+            # получение списка файлов из YANDEX DISK
+            yandex_disk_files: dict = yandex_disk.info_files()
 
-    local_files = {} # файлы из локальной папки
+            # Удаление файлов
+            yandex_dell_files: list = fnc_diff_files(yandex_disk_files, local_files)
+            yandex_delete(yandex_dell_files, yandex_disk)
 
-    for name in os.listdir(local_path):
-        # Полный путь к файлу или папки
-        full_path = os.path.join(local_path, name)
-        # Проверяем, что это файл (а не папка)
-        if os.path.isfile(full_path):
-            local_files[name] = int(os.path.getmtime(name))
+            # Запись новых файлов
+            yandex_load_files: list = fnc_diff_files(local_files, yandex_disk_files)
+            yandex_load(yandex_load_files, yandex_disk)
 
-    # if yandex_disk_files != local_files:
-    #     # получение списка файлов из YANDEX DISK
-    #     yandex_disk_files: dict = yandex_disk.info_files()
-    #
-    #     # Удаление файлов
-    #     yandex_dell_files: list = []
-    #     for name in yandex_disk_files:
-    #         if name not in local_files:
-    #             yandex_dell_files.append(name)
-    #
-    #     if len(yandex_dell_files) > 0:
-    #         for yandex_file in yandex_dell_files:
-    #             yandex_disk.delete_file(yandex_file)
-    #
-    #     # Запись новых файлов
-    #     yandex_load_files: list = []
-    #     for name in local_files:
-    #         if name not in yandex_dell_files:
-    #             yandex_load_files.append(name)
-    #
-    #     if len(yandex_load_files) > 0:
-    #         for yandex_file in yandex_load_files:
-    #             yandex_disk.load_file(yandex_file)
-    #
-    #     # Перезапись измененных файлов
-    #     yandex_existing_files: list = []
-    #     for name in yandex_disk_files:
-    #         # сравниваем время изменения - mtime
-    #         if local_files[name] != yandex_disk_files[name]:
-    #             yandex_disk.load_file(name)
-
-
-if __name__ == "__main__":
-    # user_input_path = input("Please enter the path to your Local Folder:"
-    #                         "\nExample: /home/user/Загрузки\n > ")
-    main_fnc("/home/lenovo/Изображения")
+            # Перезапись измененных файлов
+            yandex_reload_mtime_files: list = fnc_mtime_fix_files(local_files, yandex_disk_files)
+            if len(yandex_reload_mtime_files) > 0:
+                for file in yandex_reload_mtime_files:
+                    yandex_disk.load_file(file)
+            print("Sync completed.")
+            print("Sleeping..10")
+            sleep(10)
+        else:
+            print("All files the same!!!")
+            print("Sleeping..10")
+            sleep(10)
