@@ -20,6 +20,6 @@ COPY src/ ./
 # Копируем .env (если нужен)
 COPY .env ./
 
-RUN mkdir data
+RUN mkdir data logs
 
 CMD ["python", "main.py"]

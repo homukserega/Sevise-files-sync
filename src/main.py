@@ -64,6 +64,10 @@ if __name__ == "__main__":
             # получение списка файлов из YANDEX DISK
             yandex_disk_files: dict = yandex_disk.info_files() # файлы из локальной папки
 
+            # Удаление файлов на YANDEX DISK
+            delete_files: list = fnc_diff_files(yandex_disk_files, local_files)
+            yandex_delete(delete_files, yandex_disk)
+
             # Запись новых файлов на YANDEX DISK
             upload_files: list = fnc_diff_files(local_files, yandex_disk_files)
             yandex_upload(upload_files, yandex_disk)
@@ -71,8 +75,4 @@ if __name__ == "__main__":
             # Перезапись измененных файлов на YANDEX DISK
             upload_mtime_files: list = fnc_mtime_files_diff(local_files, yandex_disk_files)
             yandex_upload(upload_mtime_files, yandex_disk)
-
-            # Удаление файлов на YANDEX DISK
-            delete_files: list = fnc_diff_files(yandex_disk_files, local_files)
-            yandex_delete(delete_files, yandex_disk)
         time.sleep(10)

@@ -15,4 +15,6 @@ fi
 export HOST_PATH
 
 # Запускаем контейнеры
-docker compose up --build
+docker compose up --build -d
+
+docker compose down
