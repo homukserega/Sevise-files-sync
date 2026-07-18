@@ -100,10 +100,10 @@ if __name__ == "__main__":
                     app_custom_logger.info(f"Файлы из Yandex Disk: "
                                            f"'{yandex_disk.yandex_disk_path}' успешно получены")
                 except requests.RequestException as excl:
-                    app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.local_path}'"
+                    app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.yandex_disk_path}'"
                                             f" Yandex Disk: Ошибка сетевого соединения")
 
             time.sleep(10)
     except requests.RequestException as excl:
-        app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.local_path}'"
+        app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.yandex_disk_path}'"
                                 f" Yandex Disk: Ошибка сетевого соединения")

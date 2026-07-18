@@ -2,7 +2,7 @@ from loguru import logger
 
 import sys
 
-logger_name = "synchronizer"
+logger_name = "Service-files-sync"
 
 app_custom_logger = logger.bind(name=logger_name)
 

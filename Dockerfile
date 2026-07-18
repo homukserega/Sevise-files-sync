@@ -1,10 +1,10 @@
 FROM python:3.12.3-alpine
 
-ARG UID=1000
-ARG GID=1000
-
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+
+ARG UID=1000
+ARG GID=1000
 
 # Создаём пользователя и группу (Alpine-синтаксис)
 RUN addgroup -g ${GID} appuser && \
@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY --chown=appuser:appuser src/ ./
 COPY --chown=appuser:appuser .env ./
 
-RUN mkdir data logs && chown -R appuser:appuser data logs
+RUN mkdir data logs && chown -R 1000:1000 data logs
 
 USER appuser
 
