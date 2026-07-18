@@ -2,7 +2,7 @@ from loguru import logger
 
 import sys
 
-logger_name = "Service-files-sync"
+logger_name = "yandex-disk-dir-sync"
 
 app_custom_logger = logger.bind(name=logger_name)
 
