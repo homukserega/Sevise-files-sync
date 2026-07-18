@@ -100,32 +100,44 @@ class YandexDiskConnector:
         Метод для получения фалов в папке Yandex Disk
         :return: dict
         """
-        headers = self.get_headers()
-        headers['Content-Type'] = 'application/json'
-        headers['Accept'] = 'application/json'
+        try:
+            headers = self.get_headers()
+            headers['Content-Type'] = 'application/json'
+            headers['Accept'] = 'application/json'
 
-        yandex_files = {}
-        info_params = {"path": self._yandex_disk_path, "limit": int(10e6)}
-        info_response = requests.get(self.url, params=info_params, headers=headers)
+            yandex_files = {}
+            info_params = {"path": self._yandex_disk_path, "limit": int(10e6)}
+            info_response = requests.get(self.url, params=info_params, headers=headers)
 
-        files = info_response.json().get("_embedded", {}).get("items", [])
-        for file in files:
-            if file["type"] == "file":
-                yandex_files[file["name"]] = file.get("custom_properties", {}).get("original_mtime")
+            files = info_response.json().get("_embedded", {}).get("items", [])
+            for file in files:
+                if file["type"] == "file":
+                    yandex_files[file["name"]] = file.get("custom_properties", {}).get("original_mtime")
 
-        return yandex_files
+            return yandex_files
+        except (
+            requests.RequestException,
+        ) as exception:
+            raise exception
 
     def delete_file(self, file_name: str) -> None:
         """
         :param file_name: name of file: str
         :return: None
         """
-
-        headers = self.get_headers()
-        params = {
-            'path': f"{self.yandex_disk_path}/{file_name}",
-            'force_async': "false",  # можно также 'false' или не указывать
-            'permanently': "true",
-            # 'fields': 'href,method' # опционально – какие поля включить в ответ
-        }
-        requests.delete(self.url, params=params, headers=headers)
+        try:
+            headers = self.get_headers()
+            params = {
+                'path': f"{self.yandex_disk_path}/{file_name}",
+                'force_async': "false",  # можно также 'false' или не указывать
+                'permanently': "true",
+                # 'fields': 'href,method' # опционально – какие поля включить в ответ
+            }
+            requests.delete(self.url, params=params, headers=headers)
+        except (requests.RequestException,
+                ValueError,
+                PermissionError,
+                OSError,
+                FileNotFoundError
+                ) as exception:
+            raise FileSyncError(file_name, exception)

@@ -5,13 +5,16 @@ class FileSyncError(Exception):
     def __init__(self, filename: str, original_exception: Exception):
         self.filename = filename
         self.original_exception = original_exception
-        super().__init__(f"Синхронизация файла '{filename}' не удалась: {original_exception}")
+        super().__init__(
+            f"Синхронизация файла '{filename}' "
+            f"не удалась: {original_exception}"
+        )
 
 
 def map_error_type(exception: Exception) -> str:
     """Возвращает читаемое описание типа ошибки."""
     if isinstance(exception, requests.RequestException):
-        return "Ошибка соединения"
+        return "Ошибка сетевого соединения"
     if isinstance(exception, FileNotFoundError):
         return "Файл не найден"
     if isinstance(exception, PermissionError):
