@@ -30,7 +30,7 @@ def yandex_delete(files_list: list, ya_disk: YandexDiskConnector , action: str) 
             except FileSyncError as ex:
                 error_desc = map_error_type(ex.original_exception)
                 app_custom_logger.error(
-                    f"Файл '{ex.filename}' не был {action}. {error_desc}"
+                    f"Файл '{ex.filename}' не был {action}. {error_desc}."
                 )
 
 def yandex_upload(files_list: list, yad: YandexDiskConnector, action: str) -> None:
@@ -42,7 +42,7 @@ def yandex_upload(files_list: list, yad: YandexDiskConnector, action: str) -> No
             except FileSyncError as exc:
                 error_desc = map_error_type(exc.original_exception)
                 app_custom_logger.error(
-                    f"Файл '{exc.filename}' не был {action}. {error_desc}"
+                    f"Файл '{exc.filename}' не был {action}. {error_desc}."
                 )
 
 
@@ -69,15 +69,17 @@ if __name__ == "__main__":
     local_volume_path = "data"
 
     yandex_disk = YandexDiskConnector()
-    yandex_disk.token = os.getenv("YANDEX_TOKEN")
-    yandex_disk.yandex_disk_path = os.getenv("YANDEX_DISK_PATH")
     yandex_disk.local_path = local_volume_path
 
+    yandex_disk.token = os.getenv("YANDEX_TOKEN")
+    yandex_disk.yandex_disk_path = os.getenv("YANDEX_DISK_PATH")
+    app_custom_logger.info(f"Программа синхронизации файлов начинает работу с директорией "
+                           f"{os.getenv('HOST_PATH')}.")
     try:
         # Первое получение списка файлов из YANDEX DISK
         yandex_disk_files = yandex_disk.info_files()
         app_custom_logger.info(f"Файлы из Yandex Disk: "
-                               f"'{yandex_disk.yandex_disk_path}' успешно получены")
+                               f"'{yandex_disk.yandex_disk_path}' успешно получены.")
 
         while True:
             # получение списка файлов из локальной папки
@@ -103,9 +105,9 @@ if __name__ == "__main__":
                                            f"'{yandex_disk.yandex_disk_path}' успешно получены")
                 except requests.RequestException as excl:
                     app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.yandex_disk_path}'"
-                                            f" Yandex Disk: Ошибка сетевого соединения")
+                                            f" Yandex Disk: Ошибка сетевого соединения.")
 
             time.sleep(10)
     except requests.RequestException as excl:
         app_custom_logger.error(f"Ошибка получения данных из папки '{yandex_disk.yandex_disk_path}'"
-                                f" Yandex Disk: Ошибка сетевого соединения")
+                                f" Yandex Disk: Ошибка сетевого соединения.")

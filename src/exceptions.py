@@ -14,13 +14,13 @@ class FileSyncError(Exception):
 def map_error_type(exception: Exception) -> str:
     """Возвращает читаемое описание типа ошибки."""
     if isinstance(exception, requests.RequestException):
-        return "Ошибка сетевого соединения"
+        return "Ошибка сетевого соединения."
     if isinstance(exception, FileNotFoundError):
         return "Файл не найден"
     if isinstance(exception, PermissionError):
-        return "Недостаточно прав для чтения файла"
+        return "Недостаточно прав для чтения файла."
     if isinstance(exception, OSError):
-        return "Ошибка файловой системы"
+        return "Ошибка файловой системы."
     if isinstance(exception, ValueError):
-        return "Ошибка получения ссылки для загрузки"
+        return "Ошибка получения ссылки для загрузки."
     return f"Неизвестная ошибка ({type(exception).__name__})"
