@@ -23,7 +23,7 @@ def map_error_type(exception: Exception) -> str:
         return "Ошибка файловой системы."
     if isinstance(exception, ValueError):
         return "Ошибка получения ссылки для загрузки."
-    if exception.args[0] == "Не удалось получить ссылку для загрузки (возможно, неверный токен)":
+    if "Указанного пути" in exception.args[0] or "Не авторизован" in exception.args[0]:
             return f"{exception}"
     return f"Неизвестная ошибка ({type(exception).__name__})"
 

@@ -71,7 +71,8 @@ class YandexDiskConnector:
             if not upload_url:
                 raise FileSyncError(
                     file_name,
-                    Exception("Не удалось получить ссылку для загрузки (возможно, неверный токен)"))
+                    Exception(f"{data.get('message')}"),
+                )
             # 2. read local file to br uploaded
             with open(local_file_path, "rb") as file:
                 requests.put(upload_url, data=file, headers=self.get_headers())
