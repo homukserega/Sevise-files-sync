@@ -7,6 +7,7 @@ from exceptions import FileSyncError, UnauthorizedError
 
 class YandexDiskConnector:
     def __init__(self):
+        self.chunk_size = 1024 * 8
         self.token = None
         self.yandex_disk_path = None
         self.local_path = None
@@ -47,6 +48,15 @@ class YandexDiskConnector:
         """
         self._local_path = local_path
 
+    # 2. Генератор для чтения файла по частям
+    def chunked_reader(self, file_path: str):
+        with open(file_path, "rb") as f:
+            while True:
+                chunk = f.read(self.chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+
     def upload_file(self, file_name: str) -> None:
         """
         Method Upload single file to Yandex disk_path.
@@ -55,8 +65,8 @@ class YandexDiskConnector:
         """
         try:
             # 1. Get href to upload
-            yandex_file_path = f"{self._yandex_disk_path}/{file_name}"
-            local_file_path = f"{self._local_path}/{file_name}"
+            yandex_file_path: str = f"{self._yandex_disk_path}/{file_name}"
+            local_file_path: str = f"{self._local_path}/{file_name}"
 
             params = {
                 "path": yandex_file_path,
@@ -74,21 +84,37 @@ class YandexDiskConnector:
                     Exception(f"{data.get('message')}"),
                 )
             # 2. read local file to br uploaded
-            with open(local_file_path, "rb") as file:
-                requests.put(upload_url, data=file, headers=self.get_headers())
+            file_size_bytes = os.path.getsize(local_file_path)
+            file_size_mb = file_size_bytes / 1024
+
+            # Чтение тела файла в зависимости от размера
+            if file_size_mb <= self.chunk_size:
+                print(file_name, "small file")
+                with open(local_file_path, "rb") as f:
+                    data = f.read()
+            else:
+                print(file_name, "big file")
+                data = self.chunked_reader(local_file_path)
+
+            # Загрузка файла на Yandex Disk
+            requests.put(upload_url, data=data, headers=self.get_headers())
 
             # 3. Сохраняем исходное время модификации в custom_properties
             mtime = int(os.path.getmtime(local_file_path))  # Unix timestamp
+
             if not mtime:  # если нет времени изменения, оно равно времени создания
                 mtime = int(os.path.getctime(local_file_path))
             patch_params = {"path": yandex_file_path}
+
             patch_data = {
                 "custom_properties": {
                     "original_mtime": str(mtime)  # Сохраняем как строку
                 }
             }
+
             headers = self.get_headers()
             headers["Content-Type"] = "application/json"
+
             requests.patch(
                 self.url, params=patch_params, headers=headers, json=patch_data
             )

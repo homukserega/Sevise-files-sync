@@ -32,8 +32,10 @@ def yandex_upload(files: list, yad: YandexDiskConnector, action: str) -> None:
     if len(files) > 0:
         for item in files:
             try:
+                start_time = time.time()
                 yad.upload_file(item)
-                app_custom_logger.info(f"Файл '{item}' успешно {action}!")
+                tot_time = time.time() - start_time
+                app_custom_logger.info(f"Файл '{item}' успешно {action} за {tot_time}!")
             except FileSyncError as exc:
                 error_desc = map_error_type(exc.original_exception)
                 app_custom_logger.error(
