@@ -89,11 +89,9 @@ class YandexDiskConnector:
 
             # Чтение тела файла в зависимости от размера
             if file_size_mb <= self.chunk_size:
-                print(file_name, "small file")
                 with open(local_file_path, "rb") as f:
                     data = f.read()
             else:
-                print(file_name, "big file")
                 data = self.chunked_reader(local_file_path)
 
             # Загрузка файла на Yandex Disk
