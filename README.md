@@ -59,15 +59,21 @@ bash
 
 > docker compose up -d
 
+Просмотр логов docker compose онлайн
+bash
+
+> docker compose logs --no-log-prefix
+
 Контейнер будет автоматически перезапускаться при сбоях (политика restart: unless-stopped).
 Логи пишутся в папку ./logs на хосте (монтируется в контейнер).
+
 Остановка
 bash
 
 > docker-compose down
 >> в случае ошибки ввода пользовательских данных(см. логи) - исправьте .env - перезапустите программу
 
-Просмотр смонтированный локально логов
+Просмотр локальных(смонитированных) логов на ПК
 bash
 
 > docker volume inspect yandex-disk-dir-sync_logs_volume
